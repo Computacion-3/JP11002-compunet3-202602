@@ -42,7 +42,7 @@ export default function LoginPage() {
         })
       );
 
-      router.replace("/routines");
+      router.replace("/application");
     } catch (err) {
       setError(
         err instanceof Error
