@@ -18,7 +18,7 @@ export default function RoutinePage() {
 
     // 1. Acceso a red directo en el componente
     useEffect(() => {
-        fetch('http://localhost:3000/api/routine')
+        fetch('http://localhost:3001/api/routine')
             .then((res) => res.json())
             .then((data) => {
                 setRoutines(Array.isArray(data) ? data : []);

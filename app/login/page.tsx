@@ -1,8 +1,10 @@
+
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { userContainer } from "../../src/features/user/di/user.container";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,8 +12,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!email.trim() || !password) {
@@ -19,8 +22,36 @@ export default function LoginPage() {
       return;
     }
 
-    setError("");
-    router.replace("/routines");
+    try {
+      setError("");
+      setIsLoading(true);
+
+      const user = await userContainer.loginUserUseCase.execute({
+        email: email.trim(),
+        password,
+      });
+
+      // Guardar información básica del usuario para la sesión de la interfaz.
+      // No almacenar la contraseña.
+      sessionStorage.setItem(
+        "fitroutine_user",
+        JSON.stringify({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        })
+      );
+
+      router.replace("/routines");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al iniciar sesión."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -44,10 +75,13 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="tu@correo.com"
-                className={`input w-full ${error && !email.trim() ? "input-error" : ""}`}
+                className={`input w-full ${
+                  error && !email.trim() ? "input-error" : ""
+                }`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </fieldset>
 
@@ -60,10 +94,13 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Tu contraseña"
-                className={`input w-full ${error && !password ? "input-error" : ""}`}
+                className={`input w-full ${
+                  error && !password ? "input-error" : ""
+                }`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </fieldset>
 
@@ -73,8 +110,19 @@ export default function LoginPage() {
               </p>
             )}
 
-            <button type="submit" className="btn btn-primary mt-2 w-full">
-              Iniciar sesión
+            <button
+              type="submit"
+              className="btn btn-primary mt-2 w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
             </button>
           </form>
 
