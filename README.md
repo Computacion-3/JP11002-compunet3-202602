@@ -410,4 +410,6 @@ npm install
 npm run dev     # http://localhost:3001
 npm run build
 npm run lint
+npm run build && npx next start -p 3100 
+npx playwright codegen http://localhost:3100
 ```
